@@ -1,0 +1,46 @@
+services:  
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: local_postgres
+    environment:
+      POSTGRES_USER: root_user
+      POSTGRES_PASSWORD: root_secret
+      POSTGRES_DB: bank_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/schema:/docker-entrypoint-initdb.d # Optional: auto-run schema on start
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root_user -d bank_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend-api:
+    build:
+      context: .
+      target: dev
+    container_name: golang_backend_api
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app # Mounts the entire project for Air to watch
+    environment:
+      - DATABASE_HOST=postgres_db
+      - DATABASE_PORT=5432
+      - DATABASE_USER=root_user
+      - DATABASE_PASSWORD=root_secret
+      - DATABASE_NAME=bank_db
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
