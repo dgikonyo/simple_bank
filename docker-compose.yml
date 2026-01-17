@@ -19,21 +19,6 @@ services:
       timeout: 5s
       retries: 5
 
-  postgres_test:
-    image: postgres:15-alpine
-    container_name: test_postgres
-    environment:
-      POSTGRES_USER: root_user
-      POSTGRES_PASSWORD: root_secret
-      POSTGRES_DB: bank_test_db
-    ports:
-      - "5433:5432" # Maps host 5433 to container 5432
-    volumes:
-      - test_db_data:/var/lib/postgresql/data
-      - ./sql/schema:/docker-entrypoint-initdb.d
-    networks:
-      - app-network
-
   backend-api:
     container_name: bank_api_dev
     build:
@@ -62,4 +47,3 @@ networks:
 
 volumes:
   postgres_data:
-  # test_db_data:
