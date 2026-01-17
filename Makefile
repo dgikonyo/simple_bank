@@ -15,17 +15,32 @@ gen:
 
 # 3. Docker Commands
 dev:
-	docker compose up --build
+	docker compose up --build --remove-orphans
 
 stop:
-	docker compose down
-
-# 4. Database Migrations (Optional - if you use 'golang-migrate')
-# You can add migration commands here later
+	docker compose down --remove-orphans
 
 # 5. Clean up
 clean:
 	docker compose down -v
 	rm -rf internal/db/*
+	docker ps -q --filter "ancestor=cosmtrek/air" | xargs -r docker rm -f
 
-.PHONY: init gen dev stop clean
+# A "Nuke" command for when things get really messy
+reset:
+	docker compose down -v --remove-orphans
+	docker system prune -f
+
+# Start only the test database
+test-db-up:
+	docker compose up -d postgres_test
+
+# Run tests
+test:
+	go test -v -cover ./internal/db/...
+
+# Stop the test database
+test-db-down:
+	docker compose stop postgres_test
+
+.PHONY: init gen dev stop clean test test-db-up test-db-down clean reset
