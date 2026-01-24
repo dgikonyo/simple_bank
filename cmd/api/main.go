@@ -45,9 +45,13 @@ func main() {
 
 	// List Accounts Route
 	mux.HandleFunc("/accounts", func(w http.ResponseWriter, r *http.Request) {
-		// Use the request context r.Context() so the DB query 
-		// stops if the user closes their browser
-		accounts, err := queries.ListAccounts(r.Context())
+		// 1. Define the pagination parameters
+		arg := db.ListAccountsParams{
+			Limit:  10, // Fetch 10 records
+			Offset: 0,  // Start from the very beginning
+		}
+
+		accounts, err := queries.ListAccounts(r.Context(), arg)
 		if err != nil {
 			log.Printf("Error fetching accounts: %v", err)
 			http.Error(w, "Failed to fetch accounts", http.StatusInternalServerError)

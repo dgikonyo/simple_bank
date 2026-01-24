@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"math/rand"
 	"strings"
 	"time"
@@ -41,4 +42,29 @@ func RandomCurrency() string {
 	n := len(currencies)
 
 	return currencies[rand.Intn(n)]
+}
+
+func RandomContinent() string {
+	continents := []string{"Africa","Antarctica","Asia","Australia","Europe","North America","South America" }
+	n := len(continents)
+
+	return continents[rand.Intn(n)]
+}
+
+// getRandomOrderStatus returns a random order status from a predefined list
+func RandomOrderStatus() string {
+	statuses := []string{"pending", "processing", "shipped", "delivered", "cancelled"}
+	return statuses[RandomInt(0, int64(len(statuses)-1))]
+}
+
+// util/random.go (add this function)
+func RandomProductName() string {
+	adjectives := []string{"Premium", "Deluxe", "Basic", "Advanced", "Eco-Friendly", "Smart", "Wireless", "Portable"}
+	nouns := []string{"Widget", "Gadget", "Device", "Tool", "Accessory", "System", "Kit", "Bundle"}
+	
+	adjective := adjectives[RandomInt(0, int64(len(adjectives)-1))]
+	noun := nouns[RandomInt(0, int64(len(nouns)-1))]
+	number := RandomInt(100, 999)
+	
+	return fmt.Sprintf("%s %s %d", adjective, noun, number)
 }

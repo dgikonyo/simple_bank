@@ -10,7 +10,7 @@ import (
 )
 
 const createTransfer = `-- name: CreateTransfer :one
-INSERT INTO tranfers (
+INSERT INTO transfers (
   from_account_id, to_account_id, amount
 ) VALUES (
   $1, $2, $3
@@ -24,9 +24,9 @@ type CreateTransferParams struct {
 	Amount        int64
 }
 
-func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (Tranfer, error) {
+func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error) {
 	row := q.db.QueryRow(ctx, createTransfer, arg.FromAccountID, arg.ToAccountID, arg.Amount)
-	var i Tranfer
+	var i Transfer
 	err := row.Scan(
 		&i.ID,
 		&i.FromAccountID,
@@ -38,7 +38,7 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 }
 
 const deleteTransfer = `-- name: DeleteTransfer :exec
-DELETE FROM tranfers
+DELETE FROM transfers
 WHERE id = $1
 `
 
@@ -48,14 +48,14 @@ func (q *Queries) DeleteTransfer(ctx context.Context, id int64) error {
 }
 
 const getTransfer = `-- name: GetTransfer :one
-SELECT id, from_account_id, to_account_id, amount, created_at FROM tranfers
+SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers
 WHERE id = $1 LIMIT 1
 `
 
 // TRANSFERS
-func (q *Queries) GetTransfer(ctx context.Context, id int64) (Tranfer, error) {
+func (q *Queries) GetTransfer(ctx context.Context, id int64) (Transfer, error) {
 	row := q.db.QueryRow(ctx, getTransfer, id)
-	var i Tranfer
+	var i Transfer
 	err := row.Scan(
 		&i.ID,
 		&i.FromAccountID,
@@ -67,19 +67,19 @@ func (q *Queries) GetTransfer(ctx context.Context, id int64) (Tranfer, error) {
 }
 
 const listTransfers = `-- name: ListTransfers :many
-SELECT id, from_account_id, to_account_id, amount, created_at FROM tranfers
+SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers
 ORDER BY created_at DESC
 `
 
-func (q *Queries) ListTransfers(ctx context.Context) ([]Tranfer, error) {
+func (q *Queries) ListTransfers(ctx context.Context) ([]Transfer, error) {
 	rows, err := q.db.Query(ctx, listTransfers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Tranfer
+	var items []Transfer
 	for rows.Next() {
-		var i Tranfer
+		var i Transfer
 		if err := rows.Scan(
 			&i.ID,
 			&i.FromAccountID,

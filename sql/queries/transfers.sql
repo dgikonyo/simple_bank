@@ -1,14 +1,14 @@
 -- TRANSFERS
 -- name: GetTransfer :one
-SELECT * FROM tranfers
+SELECT * FROM transfers
 WHERE id = $1 LIMIT 1;
 
 -- name: ListTransfers :many
-SELECT * FROM tranfers
+SELECT * FROM transfers
 ORDER BY created_at DESC;
 
 -- name: CreateTransfer :one
-INSERT INTO tranfers (
+INSERT INTO transfers (
   from_account_id, to_account_id, amount
 ) VALUES (
   $1, $2, $3
@@ -16,5 +16,5 @@ INSERT INTO tranfers (
 RETURNING *;
 
 -- name: DeleteTransfer :exec
-DELETE FROM tranfers
+DELETE FROM transfers
 WHERE id = $1;

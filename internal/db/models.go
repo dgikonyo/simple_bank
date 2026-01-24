@@ -107,7 +107,7 @@ type Product struct {
 	CreatedAt  pgtype.Timestamptz
 }
 
-type Tranfer struct {
+type Transfer struct {
 	ID            int64
 	FromAccountID int64
 	ToAccountID   int64
