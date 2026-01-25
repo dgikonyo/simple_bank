@@ -57,7 +57,7 @@ func TestCreateProduct(t *testing.T) {
 	account := createRandomAccount(t)
 	country := createRandomCountry(t)
 	merchant := createRandomMerchant(t, account, country)
-	
+
 	createRandomProduct(t, merchant)
 }
 
@@ -186,7 +186,7 @@ func TestDeleteProductCascadeOrConstraint(t *testing.T) {
 	product := createRandomProduct(t, merchant)
 
 	err := testQueries.DeleteMerchant(context.Background(), merchant.ID)
-	
+
 	_, err2 := testQueries.GetProduct(context.Background(), product.ID)
 	if err == nil {
 		// Merchant deletion succeeded, check what happened to product
@@ -203,7 +203,7 @@ func TestListProductsByMerchant(t *testing.T) {
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 	country := createRandomCountry(t)
-	
+
 	merchant1 := createRandomMerchant(t, account1, country)
 	merchant2 := createRandomMerchant(t, account2, country)
 
@@ -321,7 +321,7 @@ func TestUpdateProductPartialNulls(t *testing.T) {
 	account := createRandomAccount(t)
 	country := createRandomCountry(t)
 	merchant := createRandomMerchant(t, account, country)
-	
+
 	// Create a product with non-null price and status
 	targetProduct := createRandomProduct(t, merchant)
 
@@ -394,12 +394,12 @@ func TestConcurrentProductCreation(t *testing.T) {
 	account := createRandomAccount(t)
 	country := createRandomCountry(t)
 	merchant := createRandomMerchant(t, account, country)
-	
+
 	// Number of concurrent goroutines
 	const n = 10
 	errs := make(chan error, n)
 	productIDs := make([]int32, n)
-	
+
 	for i := 0; i < n; i++ {
 		go func(id int) {
 			arg := CreateProductParams{
@@ -420,20 +420,20 @@ func TestConcurrentProductCreation(t *testing.T) {
 			errs <- err
 		}(i)
 	}
-	
+
 	// Wait for all goroutines to complete
 	for i := 0; i < n; i++ {
 		err := <-errs
 		require.NoError(t, err)
 	}
-	
+
 	// Verify all products were created
 	products, err := testQueries.ListProductsByMerchant(context.Background(), int32(merchant.ID))
 	require.NoError(t, err)
-	
+
 	// Check that we have at least n products (could be more if other tests created some)
 	require.GreaterOrEqual(t, len(products), n)
-	
+
 	// Verify our specific products exist
 	for i := 0; i < n; i++ {
 		product, err := testQueries.GetProduct(context.Background(), productIDs[i])

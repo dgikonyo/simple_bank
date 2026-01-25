@@ -63,10 +63,10 @@ func TestUpdateAccount(t *testing.T) {
 		CountryCode:  account1.CountryCode,
 	}
 
-	err := testQueries.UpdateAccount(context.Background(), arg)
+	updatedAccount, err := testQueries.UpdateAccount(context.Background(), arg)
 	require.NoError(t, err)
 
-	updatedAccount, err := testQueries.GetAccount(context.Background(), account1.ID)
+	// updatedAccount, err := testQueries.GetAccount(context.Background(), account1.ID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, updatedAccount)

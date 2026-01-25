@@ -11,10 +11,10 @@ import (
 )
 
 func createRandomMerchant(t *testing.T, account Account, country Country) Merchant {
-	arg := CreateMerchantParams {
+	arg := CreateMerchantParams{
 		MerchantName: util.RandomOwner(),
-		CountryCode: int32(country.Code),
-		AdminID: int32(account.ID),
+		CountryCode:  int32(country.Code),
+		AdminID:      int32(account.ID),
 	}
 
 	merchant, err := testQueries.CreateMerchant(context.Background(), arg)
@@ -37,8 +37,10 @@ func TestCreateMerchant(t *testing.T) {
 	createRandomMerchant(t, account, country)
 }
 
-/**
-	here we have created a merchant, 
+/*
+*
+
+	here we have created a merchant,
 	and are testing if that merchant exists in the database
 */
 func TestGetMerchant(t *testing.T) {
@@ -61,7 +63,7 @@ func TestDeleteMerchant(t *testing.T) {
 	account := createRandomAccount(t)
 	country := createRandomCountry(t)
 	target_merchant := createRandomMerchant(t, account, country)
-	
+
 	err := testQueries.DeleteMerchant(context.Background(), target_merchant.ID)
 	require.NoError(t, err)
 
@@ -82,7 +84,7 @@ func TestListMerchant(t *testing.T) {
 
 	listed_merchants, err := testQueries.ListMerchants(context.Background())
 	require.NoError(t, err)
-    require.NotEmpty(t, listed_merchants)
+	require.NotEmpty(t, listed_merchants)
 
 	// verify that the merchants are in the list
 	foundCount := 0
@@ -98,16 +100,16 @@ func TestListMerchant(t *testing.T) {
 	require.GreaterOrEqual(t, foundCount, 5)
 }
 
-func TestUpdateMerchant(t *testing.T){
+func TestUpdateMerchant(t *testing.T) {
 	account := createRandomAccount(t)
 	country := createRandomCountry(t)
 	target_merchant := createRandomMerchant(t, account, country)
 
 	arg := UpdateMerchantParams{
-		ID: target_merchant.ID,
+		ID:           target_merchant.ID,
 		MerchantName: "Gikonyo Merchants",
-		CountryCode: target_merchant.CountryCode,
-		AdminID: target_merchant.AdminID,
+		CountryCode:  target_merchant.CountryCode,
+		AdminID:      target_merchant.AdminID,
 	}
 
 	err := testQueries.UpdateMerchant(context.Background(), arg)

@@ -4,9 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"simple_bank/util"
+
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/stretchr/testify/require"
-	"simple_bank/util"
 )
 
 // createRandomOrderItem is a helper function to create a random order item for testing
@@ -59,7 +60,7 @@ func TestCreateOrderItem(t *testing.T) {
 	country := createRandomCountry(t)
 	merchant := createRandomMerchant(t, account, country)
 	product := createRandomProduct(t, merchant)
-	
+
 	// Create an order for the account
 	orderArg := CreateOrderParams{
 		ID: int32(util.RandomInt(1, 10000)),
@@ -85,7 +86,7 @@ func TestCreateOrderItemWithNullValues(t *testing.T) {
 	country := createRandomCountry(t)
 	merchant := createRandomMerchant(t, account, country)
 	product := createRandomProduct(t, merchant)
-	
+
 	// Create an order
 	orderArg := CreateOrderParams{
 		ID: int32(util.RandomInt(10001, 20000)),
@@ -159,7 +160,7 @@ func TestCreateDuplicateOrderItem(t *testing.T) {
 	country := createRandomCountry(t)
 	merchant := createRandomMerchant(t, account, country)
 	product := createRandomProduct(t, merchant)
-	
+
 	// Create an order
 	orderArg := CreateOrderParams{
 		ID: int32(util.RandomInt(20001, 30000)),
@@ -204,7 +205,7 @@ func TestCreateDuplicateOrderItem(t *testing.T) {
 			Valid: true,
 		})
 		require.NoError(t, err)
-		
+
 		// Count occurrences of this product in the order
 		count := 0
 		for _, item := range orderItems {
@@ -223,13 +224,13 @@ func TestListOrderItems(t *testing.T) {
 	account := createRandomAccount(t)
 	country := createRandomCountry(t)
 	merchant := createRandomMerchant(t, account, country)
-	
+
 	// Create multiple products
 	products := make([]Product, 5)
 	for i := 0; i < 5; i++ {
 		products[i] = createRandomProduct(t, merchant)
 	}
-	
+
 	// Create an order
 	orderArg := CreateOrderParams{
 		ID: int32(util.RandomInt(30001, 40000)),
@@ -261,7 +262,7 @@ func TestListOrderItems(t *testing.T) {
 		}
 		err = testQueries.CreateOrderItem(context.Background(), arg)
 		require.NoError(t, err)
-		
+
 		// Store expected items for verification
 		createdItems[i] = OrderItem{
 			OrderID:   arg.OrderID,
@@ -338,7 +339,7 @@ func TestUpdateOrderItem(t *testing.T) {
 	country := createRandomCountry(t)
 	merchant := createRandomMerchant(t, account, country)
 	product := createRandomProduct(t, merchant)
-	
+
 	// Create an order
 	orderArg := CreateOrderParams{
 		ID: int32(util.RandomInt(50001, 60000)),
@@ -377,7 +378,7 @@ func TestUpdateOrderItem(t *testing.T) {
 		},
 		ProductID: product.ID,
 		Quantity: pgtype.Int4{
-			Int32: 5, 
+			Int32: 5,
 			Valid: true,
 		},
 	}
@@ -412,7 +413,7 @@ func TestUpdateOrderItem(t *testing.T) {
 		},
 		ProductID: product.ID,
 		Quantity: pgtype.Int4{
-			Valid: false, 
+			Valid: false,
 		},
 	}
 
@@ -425,7 +426,7 @@ func TestUpdateOrderItem(t *testing.T) {
 		Valid: true,
 	})
 	require.NoError(t, err)
-	
+
 	for _, item := range orderItems2 {
 		if item.ProductID == product.ID {
 			require.False(t, item.Quantity.Valid, "Quantity should be null")
@@ -438,10 +439,10 @@ func TestUpdateOrderItem(t *testing.T) {
 func TestUpdateNonExistentOrderItem(t *testing.T) {
 	updateArg := UpdateOrderItemParams{
 		OrderID: pgtype.Int4{
-			Int32: 999999, 
+			Int32: 999999,
 			Valid: true,
 		},
-		ProductID: 999999, 
+		ProductID: 999999,
 		Quantity: pgtype.Int4{
 			Int32: 10,
 			Valid: true,
@@ -449,7 +450,7 @@ func TestUpdateNonExistentOrderItem(t *testing.T) {
 	}
 
 	err := testQueries.UpdateOrderItem(context.Background(), updateArg)
-	require.NoError(t, err) 
+	require.NoError(t, err)
 }
 
 // TestDeleteOrderItem tests deleting an order item
@@ -458,7 +459,7 @@ func TestDeleteOrderItem(t *testing.T) {
 	country := createRandomCountry(t)
 	merchant := createRandomMerchant(t, account, country)
 	product := createRandomProduct(t, merchant)
-	
+
 	// Create an order
 	orderArg := CreateOrderParams{
 		ID: int32(util.RandomInt(60001, 70000)),
@@ -514,7 +515,7 @@ func TestDeleteOrderItem(t *testing.T) {
 		Valid: true,
 	})
 	require.NoError(t, err)
-	
+
 	// Check that the specific product is no longer in the order
 	for _, item := range orderItemsAfter {
 		require.NotEqual(t, product.ID, item.ProductID, "Order item should have been deleted")
@@ -532,7 +533,7 @@ func TestDeleteNonExistentOrderItem(t *testing.T) {
 	}
 
 	err := testQueries.DeleteOrderItem(context.Background(), deleteArg)
-	require.NoError(t, err) 
+	require.NoError(t, err)
 }
 
 // TestCascadeDelete tests what happens when an order or product is deleted
@@ -541,7 +542,7 @@ func TestCascadeDelete(t *testing.T) {
 	country := createRandomCountry(t)
 	merchant := createRandomMerchant(t, account, country)
 	product := createRandomProduct(t, merchant)
-	
+
 	// Create an order
 	orderArg := CreateOrderParams{
 		ID: int32(util.RandomInt(70001, 80000)),
@@ -575,13 +576,13 @@ func TestCascadeDelete(t *testing.T) {
 	// Test what happens when we delete the order
 	err = testQueries.DeleteOrder(context.Background(), order.ID)
 	require.NoError(t, err)
-	
+
 	// Try to list order items for the deleted order
 	orderItems, err := testQueries.ListOrderItems(context.Background(), pgtype.Int4{
 		Int32: order.ID,
 		Valid: true,
 	})
-	
+
 	require.NoError(t, err)
 	require.Empty(t, orderItems)
 }
@@ -592,7 +593,7 @@ func TestOrderItemQuantityBoundaries(t *testing.T) {
 	country := createRandomCountry(t)
 	merchant := createRandomMerchant(t, account, country)
 	product := createRandomProduct(t, merchant)
-	
+
 	// Create an order
 	orderArg := CreateOrderParams{
 		ID: int32(util.RandomInt(80001, 90000)),
@@ -694,13 +695,13 @@ func TestConcurrentOrderItemOperations(t *testing.T) {
 	account := createRandomAccount(t)
 	country := createRandomCountry(t)
 	merchant := createRandomMerchant(t, account, country)
-	
+
 	// Create multiple products
 	products := make([]Product, 3)
 	for i := 0; i < 3; i++ {
 		products[i] = createRandomProduct(t, merchant)
 	}
-	
+
 	// Create an order
 	orderArg := CreateOrderParams{
 		ID: int32(util.RandomInt(90001, 100000)),

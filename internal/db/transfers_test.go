@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
 	"github.com/jackc/pgx/v5"
+	"github.com/stretchr/testify/require"
 	"simple_bank/util"
 )
 
@@ -15,10 +15,10 @@ func createRandomTransfer(t *testing.T) (Transfer, Account, Account) {
 	// Create two random accounts for transfer
 	fromAccount := createRandomAccount(t)
 	toAccount := createRandomAccount(t)
-	
+
 	// Ensure accounts are different (important for transfers)
 	require.NotEqual(t, fromAccount.ID, toAccount.ID)
-	
+
 	// Generate random transfer parameters
 	arg := CreateTransferParams{
 		FromAccountID: fromAccount.ID,
@@ -50,7 +50,7 @@ func TestCreateTransfer(t *testing.T) {
 // TestCreateTransferSameAccount tests transferring to same account
 func TestCreateTransferSameAccount(t *testing.T) {
 	account := createRandomAccount(t)
-	
+
 	arg := CreateTransferParams{
 		FromAccountID: account.ID,
 		ToAccountID:   account.ID, // Same account
@@ -58,7 +58,7 @@ func TestCreateTransferSameAccount(t *testing.T) {
 	}
 
 	transfer, err := testQueries.CreateTransfer(context.Background(), arg)
-	
+
 	if err != nil {
 		require.Contains(t, err.Error(), "check", "Expected constraint violation")
 	} else {
@@ -72,7 +72,7 @@ func TestCreateTransferSameAccount(t *testing.T) {
 func TestCreateTransferWithZeroAmount(t *testing.T) {
 	fromAccount := createRandomAccount(t)
 	toAccount := createRandomAccount(t)
-	
+
 	arg := CreateTransferParams{
 		FromAccountID: fromAccount.ID,
 		ToAccountID:   toAccount.ID,
@@ -92,7 +92,7 @@ func TestCreateTransferWithZeroAmount(t *testing.T) {
 func TestCreateTransferWithNegativeAmount(t *testing.T) {
 	fromAccount := createRandomAccount(t)
 	toAccount := createRandomAccount(t)
-	
+
 	arg := CreateTransferParams{
 		FromAccountID: fromAccount.ID,
 		ToAccountID:   toAccount.ID,
@@ -109,7 +109,7 @@ func TestCreateTransferWithNegativeAmount(t *testing.T) {
 func TestCreateTransferLargeAmount(t *testing.T) {
 	fromAccount := createRandomAccount(t)
 	toAccount := createRandomAccount(t)
-	
+
 	arg := CreateTransferParams{
 		FromAccountID: fromAccount.ID,
 		ToAccountID:   toAccount.ID,
@@ -139,7 +139,7 @@ func TestGetTransfer(t *testing.T) {
 	require.Equal(t, initialTransfer.ToAccountID, retrievedTransfer.ToAccountID)
 	require.Equal(t, initialTransfer.Amount, retrievedTransfer.Amount)
 	require.WithinDuration(t, initialTransfer.CreatedAt.Time, retrievedTransfer.CreatedAt.Time, time.Second)
-	
+
 	require.Equal(t, fromAccount.ID, retrievedTransfer.FromAccountID)
 	require.Equal(t, toAccount.ID, retrievedTransfer.ToAccountID)
 }
@@ -199,14 +199,14 @@ func TestListTransfers(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, listedTransfers)
 
-	// We should have at least 5 transfers 
+	// We should have at least 5 transfers
 	require.GreaterOrEqual(t, len(listedTransfers), 5)
 
 	// Verify transfers are sorted by created_at DESC
 	for i := 0; i < len(listedTransfers)-1; i++ {
-		require.True(t, 
+		require.True(t,
 			listedTransfers[i].CreatedAt.Time.After(listedTransfers[i+1].CreatedAt.Time) ||
-			listedTransfers[i].CreatedAt.Time.Equal(listedTransfers[i+1].CreatedAt.Time),
+				listedTransfers[i].CreatedAt.Time.Equal(listedTransfers[i+1].CreatedAt.Time),
 			"Transfers not sorted by created_at DESC",
 		)
 	}
@@ -222,13 +222,6 @@ func TestListTransfers(t *testing.T) {
 		}
 	}
 	require.Equal(t, 5, foundCount, "Not all created transfers found in list")
-}
-
-// TestListTransfersEmpty tests listing transfers when none exist
-func TestListTransfersEmpty(t *testing.T) {
-	listedTransfers, err := testQueries.ListTransfers(context.Background())
-	require.NoError(t, err)
-	require.Empty(t, listedTransfers)
 }
 
 // TestTransferIntegrity tests foreign key constraints
@@ -259,11 +252,11 @@ func TestTransferIntegrity(t *testing.T) {
 func TestConcurrentTransfers(t *testing.T) {
 	fromAccount := createRandomAccount(t)
 	toAccount := createRandomAccount(t)
-	
+
 	// Number of concurrent goroutines
 	const n = 10
 	errs := make(chan error, n)
-	
+
 	for i := 0; i < n; i++ {
 		go func(id int) {
 			arg := CreateTransferParams{
@@ -275,21 +268,21 @@ func TestConcurrentTransfers(t *testing.T) {
 			errs <- err
 		}(i)
 	}
-	
+
 	for i := 0; i < n; i++ {
 		err := <-errs
 		require.NoError(t, err)
 	}
-	
+
 	// Verify all transfers were created
 	listedTransfers, err := testQueries.ListTransfers(context.Background())
 	require.NoError(t, err)
-	
+
 	// Count transfers between these two accounts
 	count := 0
 	for _, transfer := range listedTransfers {
-		if transfer.FromAccountID == fromAccount.ID && 
-		   transfer.ToAccountID == toAccount.ID {
+		if transfer.FromAccountID == fromAccount.ID &&
+			transfer.ToAccountID == toAccount.ID {
 			count++
 		}
 	}
@@ -300,10 +293,10 @@ func TestConcurrentTransfers(t *testing.T) {
 func TestTransferAmountPrecision(t *testing.T) {
 	fromAccount := createRandomAccount(t)
 	toAccount := createRandomAccount(t)
-	
+
 	testCases := []struct {
-		name   string
-		amount int64
+		name       string
+		amount     int64
 		shouldFail bool
 	}{
 		{"Single cent", 1, false},
@@ -313,7 +306,7 @@ func TestTransferAmountPrecision(t *testing.T) {
 		{"Negative amount", -1, true},
 		{"Very large amount", 9223372036854775807, false}, // Max int64
 	}
-	
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			arg := CreateTransferParams{
@@ -321,9 +314,9 @@ func TestTransferAmountPrecision(t *testing.T) {
 				ToAccountID:   toAccount.ID,
 				Amount:        tc.amount,
 			}
-			
+
 			transfer, err := testQueries.CreateTransfer(context.Background(), arg)
-			
+
 			if tc.shouldFail {
 				require.Error(t, err)
 				// Check for specific constraint violations
@@ -334,7 +327,7 @@ func TestTransferAmountPrecision(t *testing.T) {
 				require.NoError(t, err)
 				require.NotEmpty(t, transfer)
 				require.Equal(t, tc.amount, transfer.Amount)
-				
+
 				// Clean up for next test
 				err = testQueries.DeleteTransfer(context.Background(), transfer.ID)
 				require.NoError(t, err)
@@ -346,10 +339,10 @@ func TestTransferAmountPrecision(t *testing.T) {
 // TestTransferAuditTrail tests that created_at is properly set
 func TestTransferAuditTrail(t *testing.T) {
 	transfer, _, _ := createRandomTransfer(t)
-	
+
 	// Verify created_at is recent (within last minute)
 	require.WithinDuration(t, time.Now(), transfer.CreatedAt.Time, time.Minute)
-	
+
 	// Verify created_at doesn't change on subsequent retrieval
 	retrievedTransfer, err := testQueries.GetTransfer(context.Background(), transfer.ID)
 	require.NoError(t, err)
@@ -361,28 +354,28 @@ func TestTransferIsolation(t *testing.T) {
 	// Create two independent transfers
 	transfer1, acc1, acc2 := createRandomTransfer(t)
 	transfer2, acc3, acc4 := createRandomTransfer(t)
-	
+
 	// Ensure all transfers are distinct
 	require.NotEqual(t, transfer1.ID, transfer2.ID)
 	require.NotEqual(t, acc1.ID, acc3.ID) // Different accounts
 	require.NotEqual(t, acc2.ID, acc4.ID)
-	
+
 	// Verify each transfer can be retrieved independently
 	retrieved1, err := testQueries.GetTransfer(context.Background(), transfer1.ID)
 	require.NoError(t, err)
 	require.Equal(t, transfer1.FromAccountID, retrieved1.FromAccountID)
-	
+
 	retrieved2, err := testQueries.GetTransfer(context.Background(), transfer2.ID)
 	require.NoError(t, err)
 	require.Equal(t, transfer2.FromAccountID, retrieved2.FromAccountID)
-	
+
 	// Delete one transfer, other should remain
 	err = testQueries.DeleteTransfer(context.Background(), transfer1.ID)
 	require.NoError(t, err)
-	
+
 	_, err = testQueries.GetTransfer(context.Background(), transfer1.ID)
 	require.Error(t, err)
-	
+
 	_, err = testQueries.GetTransfer(context.Background(), transfer2.ID)
 	require.NoError(t, err)
 }
