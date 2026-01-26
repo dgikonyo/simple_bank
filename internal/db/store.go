@@ -13,36 +13,6 @@ type Store struct {
 	db *pgxpool.Pool
 }
 
-// NewStore creates a new store ~ constructor
-func NewStore(db *pgxpool.Pool) *Store {
-	return &Store{
-		db:      db,
-		Queries: New(db),
-	}
-}
-
-// it handles an entire transaction and maintains it state from begin to when the transaction ends
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
-	tx, err := store.db.Begin(ctx)
-
-	if err != nil {
-		return err
-	}
-
-	q := New(tx)
-	err = fn(q)
-
-	if err != nil {
-		if rbErr := tx.Rollback(ctx); rbErr != nil {
-			return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
-		}
-
-		return err
-	}
-
-	return tx.Commit(ctx)
-}
-
 // TransferTxParams contains the input parameters of the transfer transaction
 type TransferTxParams struct {
 	FromAccountID int64 `json:"from_account_id"`
@@ -59,6 +29,40 @@ type TransferTxResult struct {
 	ToEntry     Entry    `json:"to_entry"`
 }
 
+// NewStore creates a new store ~ constructor
+func NewStore(db *pgxpool.Pool) *Store {
+	return &Store{
+		db:      db,
+		Queries: New(db),
+	}
+}
+
+/**
+* it handles an entire transaction and maintains it state from begin to when the transaction ends
+* handles the boilerplate of a database transaction.
+*/
+func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+	tx, err := store.db.Begin(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	// Creates a new set of queries that run inside that specific transaction.
+	q := New(tx)
+	err = fn(q)
+
+	if err != nil {
+		if rbErr := tx.Rollback(ctx); rbErr != nil {
+			return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
+		}
+
+		return err
+	}
+
+	return tx.Commit(ctx)
+}
+
 // TransferTx performs a money transfer from one account to the other
 // It creates a transfer record, add account entries, and update accounts' balance within a single database transaction
 func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
@@ -67,6 +71,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 
+		//1. create transfer
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
 			FromAccountID: arg.FromAccountID,
 			ToAccountID:   arg.ToAccountID,
@@ -90,6 +95,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
         })
         if err != nil { return err }
 
+		//  4. update balances
 		if arg.FromAccountID < arg.ToAccountID {
 			result.FromAccount, result.ToAccount, err = addMoney(ctx, q, arg.FromAccountID, -arg.Amount, arg.ToAccountID, arg.Amount)
 		} else {
