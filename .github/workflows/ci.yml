@@ -14,6 +14,21 @@ jobs:
   build:
     name: Test
     runs-on: ubuntu-latest
+
+    services:  
+      postgres_db:
+        image: postgres:15-alpine
+        container_name: bank_db_dev
+        environment:
+          POSTGRES_USER: root_user
+          POSTGRES_PASSWORD: root_secret
+          POSTGRES_DB: bank_db
+        options: >-
+          --health-cmd="pg_isready -U root_user -d bank_db"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+    
     steps:
     - uses: actions/checkout@v4
 
