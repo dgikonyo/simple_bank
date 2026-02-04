@@ -15,8 +15,7 @@ jobs:
     services:  
       postgres_db:
         image: postgres:15-alpine
-        container_name: bank_db_dev
-        environment:
+        env:
           POSTGRES_USER: root_user
           POSTGRES_PASSWORD: root_secret
           POSTGRES_DB: bank_db
