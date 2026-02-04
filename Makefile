@@ -1,5 +1,6 @@
 # --- Variables ---
 DB_URL=postgresql://root_user:root_secret@localhost:5432/bank_db?sslmode=disable
+MIGRATE_PATH=./sql/schema
 BINARY_NAME=main
 
 # --- Commands ---
@@ -27,6 +28,12 @@ clean:
 	docker ps -q --filter "ancestor=cosmtrek/air" | xargs -r docker rm -f
 
 # A "Nuke" command for when things get really messy
+migrate-up:
+	migrate -path $(MIGRATE_PATH) -database "$(DB_URL)" -verbose up
+
+migrate-down:
+	migrate -path $(MIGRATE_PATH) -database "$(DB_URL)" -verbose down 1
+
 reset:
 	docker compose down -v --remove-orphans
 	docker system prune -f
