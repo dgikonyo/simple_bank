@@ -42,7 +42,7 @@ func TestTransferTx(t *testing.T) {
 		require.NoError(t, err)
 
 		result := <-results
-		require.NotEmpty(t, result)
+		require.NotEmpty(t, result)	
 
 		// check transfer
 		transfer := result.Transfer
