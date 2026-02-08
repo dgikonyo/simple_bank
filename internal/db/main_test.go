@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"simple_bank/util"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -14,24 +15,14 @@ var testQueries *Queries
 var testDB *pgxpool.Pool
 
 func TestMain(m *testing.M) {
-	// Fallback to localhost if the variable isn't set (for local dev)
-	dbHost := os.Getenv("DATABASE_HOST")
-	if dbHost == "" {
-		dbHost = "127.0.0.1" 
+	config, err := util.LoadConfig("../../")
+	if err != nil {
+		log.Fatal("Cannot load config:", err)
 	}
-
-	dbPort := os.Getenv("DATABASE_PORT")
-	if dbPort == "" {
-		dbPort = "5432"
-	}
-
-	connStr := fmt.Sprintf("postgresql://root_user:root_secret@%s:%s/bank_db?sslmode=disable", dbHost, dbPort)
-
 	// Add this log so you can see what's happening in the console
-	fmt.Printf("Testing connection to: %s\n", connStr)
+	fmt.Printf("Testing connection to: %s\n", config.DBSource)
 
-	var err error
-	testDB, err = pgxpool.New(context.Background(), connStr)
+	testDB, err = pgxpool.New(context.Background(), config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}

@@ -50,4 +50,7 @@ test:
 test-db-down:
 	docker compose stop postgres_test
 
-.PHONY: init gen dev stop clean test test-db-up test-db-down clean reset
+server:
+	go run main.go
+
+.PHONY: init gen dev stop clean test test-db-up test-db-down clean reset server migrate-up migrate-down

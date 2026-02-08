@@ -30,6 +30,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: List files for debugging
+  # This shows you exactly where you are and what folders exist
+      run: |
+        pwd
+        ls -R
+
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
@@ -38,9 +44,19 @@ jobs:
     
     - name: Install golang-migrate
       run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
+    - name: Wait for Postgres
+      run: |
+        sudo apt-get update && sudo apt-get install -y postgresql-client
+        until pg_isready -h localhost -p 5432 -U root_user; do
+          echo "Waiting for postgres..."
+          sleep 2
+        done
     
     - name: Run migrations
-      run: make migrate-up
+      run: |
+        export PGPASSWORD=root_secret
+        psql -h localhost -U root_user -d bank_db -f ./sql/schema/schema.sql
 
     - name: Test
       run: make test

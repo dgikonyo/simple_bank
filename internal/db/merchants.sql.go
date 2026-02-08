@@ -77,7 +77,7 @@ func (q *Queries) ListMerchants(ctx context.Context) ([]Merchant, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Merchant
+	items := []Merchant{}
 	for rows.Next() {
 		var i Merchant
 		if err := rows.Scan(

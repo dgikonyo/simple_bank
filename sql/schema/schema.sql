@@ -12,7 +12,7 @@ CREATE TABLE "accounts" (
 
 CREATE TABLE "entries" ("id" bigserial PRIMARY KEY NOT NULL, "account_id" bigint NOT NULL, "amount" bigint NOT NULL, "created_at" timestamptz NOT NULL DEFAULT (now()));
 
-CREATE TABLE "transfers" ("id" bigserial PRIMARY KEY NOT NULL, "from_account_id" bigint NOT NULL, "to_account_id" bigint NOT NULL, "amount" bigint NOT NULL, "created_at" timestamptz NOT NULL DEFAULT (now()));
+CREATE TABLE "transfers" ("id" bigserial PRIMARY KEY NOT NULL, "from_account_id" bigint NOT NULL, "to_account_id" bigint NOT NULL, "amount" bigint NOT NULL CHECK (amount > 0), "created_at" timestamptz NOT NULL DEFAULT (now()));
 
 CREATE TABLE "merchants" ("id" bigserial PRIMARY KEY NOT NULL, "merchant_name" varchar NOT NULL, "country_code" int NOT NULL, "created_at" timestamptz NOT NULL DEFAULT (now()), "admin_id" int NOT NULL);
 
@@ -38,22 +38,25 @@ COMMENT ON COLUMN "entries"."amount" IS 'can be negative';
 COMMENT ON COLUMN "transfers"."amount" IS 'must be positive';
 
 ALTER TABLE "entries"
-ADD FOREIGN KEY ("account_id") REFERENCES "accounts" ("id");
+ADD FOREIGN KEY ("account_id") REFERENCES "accounts" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "transfers"
-ADD FOREIGN KEY ("from_account_id") REFERENCES "accounts" ("id");
+ADD FOREIGN KEY ("from_account_id") REFERENCES "accounts" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "transfers"
-ADD FOREIGN KEY ("to_account_id") REFERENCES "accounts" ("id");
+ADD FOREIGN KEY ("to_account_id") REFERENCES "accounts" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "merchants"
-ADD FOREIGN KEY ("country_code") REFERENCES "countries" ("code");
+ADD FOREIGN KEY ("country_code") REFERENCES "countries" ("code") ON DELETE CASCADE;
 
 ALTER TABLE "merchants"
-ADD FOREIGN KEY ("admin_id") REFERENCES "accounts" ("id");
+ADD FOREIGN KEY ("admin_id") REFERENCES "accounts" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "products"
-ADD FOREIGN KEY ("merchant_id") REFERENCES "merchants" ("id");
+ADD FOREIGN KEY ("merchant_id") REFERENCES "merchants" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "order_items"
-ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id");
+ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE CASCADE;
+
+ALTER TABLE "order_items"
+ADD FOREIGN KEY ("order_id") REFERENCES "orders" ("id") ON DELETE CASCADE;

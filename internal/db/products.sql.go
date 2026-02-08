@@ -90,7 +90,7 @@ func (q *Queries) ListProductsByMerchant(ctx context.Context, merchantID int32) 
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Product
+	items := []Product{}
 	for rows.Next() {
 		var i Product
 		if err := rows.Scan(

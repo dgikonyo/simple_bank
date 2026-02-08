@@ -78,7 +78,7 @@ func (q *Queries) ListOrdersByUser(ctx context.Context, userID pgtype.Int4) ([]O
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Order
+	items := []Order{}
 	for rows.Next() {
 		var i Order
 		if err := rows.Scan(
