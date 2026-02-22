@@ -6,14 +6,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// server serves HTTP requests for our banking service
+// Server is an HTTP server that handles banking API requests.
+// It uses a Gin router for HTTP routing and a database store for data persistence.
 type Server struct {
-	store *db.Store
+	store  db.Store
 	router *gin.Engine
 }
 
 // NewServer creates a new HTTP server and setup routing.
-func NewServer(store *db.Store) *Server {
+// NewServer creates and returns a new Server instance with the provided database store.
+// It initializes a Gin router and sets up the following routes:
+// - POST /accounts: creates a new account
+// - GET /accounts/:id: retrieves an account by ID
+// - GET /accounts: lists all accounts
+func NewServer(store db.Store) *Server {
 	server := &Server{store: store}
 	router := gin.Default()
 
@@ -31,7 +37,6 @@ func (server *Server) StartServer(address string) error {
 	return server.router.Run(address)
 }
 
-func  errorResponse(err error) gin.H {
+func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
 }
-

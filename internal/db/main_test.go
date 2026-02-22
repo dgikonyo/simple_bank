@@ -7,7 +7,6 @@ import (
 	"os"
 	"simple_bank/util"
 	"testing"
-
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

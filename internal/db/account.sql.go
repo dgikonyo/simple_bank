@@ -183,23 +183,13 @@ type UpdateAccountParams struct {
 	CountryCode int32
 }
 
-func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (Account, error) {
-	row := q.db.QueryRow(ctx, updateAccount,
+func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) error {
+	_, err := q.db.Exec(ctx, updateAccount,
 		arg.ID,
 		arg.Owner,
 		arg.Balance,
 		arg.Currency,
 		arg.CountryCode,
 	)
-	var account Account
-	err := row.Scan(
-		&account.ID,
-		&account.Owner,
-		&account.Balance,
-		&account.Currency,
-		&account.CountryCode,
-		&account.CreatedAt,
-		&account.UpdatedAt,
-	)
-	return account, err
+	return err
 }

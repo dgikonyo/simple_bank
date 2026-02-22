@@ -53,4 +53,7 @@ test-db-down:
 server:
 	go run main.go
 
-.PHONY: init gen dev stop clean test test-db-up test-db-down clean reset server migrate-up migrate-down
+mock:
+	mockgen -destination internal/db/mock/store.go simple_bank/internal/db Store
+
+.PHONY: init gen dev stop clean test test-db-up test-db-down clean reset server migrate-up migrate-down mock

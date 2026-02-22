@@ -16,3 +16,4 @@ sql:
         out: "internal/db"
         sql_package: "pgx/v5"
         emit_empty_slices: true
+        emit_interface: true

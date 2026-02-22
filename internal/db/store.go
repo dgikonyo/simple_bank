@@ -8,7 +8,13 @@ import (
 )
 
 // Store provides all functions to execute db queries and transactions
-type Store struct {
+type Store interface {
+	Querier
+	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
+}
+
+// Store provides all functions to execute db queries and transactions
+type SQLStore struct {
 	*Queries
 	db *pgxpool.Pool
 }
@@ -30,8 +36,8 @@ type TransferTxResult struct {
 }
 
 // NewStore creates a new store ~ constructor
-func NewStore(db *pgxpool.Pool) *Store {
-	return &Store{
+func NewStore(db *pgxpool.Pool) Store {
+	return &SQLStore{
 		db:      db,
 		Queries: New(db),
 	}
@@ -40,8 +46,8 @@ func NewStore(db *pgxpool.Pool) *Store {
 /**
 * it handles an entire transaction and maintains it state from begin to when the transaction ends
 * handles the boilerplate of a database transaction.
-*/
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+ */
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.Begin(ctx)
 
 	if err != nil {
@@ -65,7 +71,7 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 
 // TransferTx performs a money transfer from one account to the other
 // It creates a transfer record, add account entries, and update accounts' balance within a single database transaction
-func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
@@ -82,18 +88,22 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 		}
 
 		// 2. Create "From" Entry (Money leaving)
-        result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
-            AccountID: arg.FromAccountID,
-            Amount:    -arg.Amount,
-        })
-        if err != nil { return err }
+		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
+			AccountID: arg.FromAccountID,
+			Amount:    -arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
 
-        // 3. Create "To" Entry (Money arriving)
-        result.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
-            AccountID: arg.ToAccountID,
-            Amount:    arg.Amount,
-        })
-        if err != nil { return err }
+		// 3. Create "To" Entry (Money arriving)
+		result.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
+			AccountID: arg.ToAccountID,
+			Amount:    arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
 
 		//  4. update balances
 		if arg.FromAccountID < arg.ToAccountID {
