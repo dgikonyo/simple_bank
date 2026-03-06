@@ -56,4 +56,7 @@ server:
 mock:
 	mockgen -destination internal/db/mock/store.go simple_bank/internal/db Store
 
-.PHONY: init gen dev stop clean test test-db-up test-db-down clean reset server migrate-up migrate-down mock
+db-shell:
+	docker exec -it bank_db_dev psql -U root_user -d bank_db
+
+.PHONY: init gen dev stop clean test test-db-up test-db-down clean reset server migrate-up migrate-down mock db-shell
