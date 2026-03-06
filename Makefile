@@ -59,4 +59,7 @@ mock:
 db-shell:
 	docker exec -it bank_db_dev psql -U root_user -d bank_db
 
-.PHONY: init gen dev stop clean test test-db-up test-db-down clean reset server migrate-up migrate-down mock db-shell
+api-shell:
+	docker exec -it bank_api_dev /bin/sh
+
+.PHONY: init gen dev stop clean test test-db-up test-db-down clean reset server migrate-up migrate-down mock db-shell api-shell

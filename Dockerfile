@@ -1,7 +1,7 @@
 # --- Stage 1: Builder & Development ---
 FROM golang:1.25-alpine AS builder
 
-RUN apk add --no-cache git
+RUN apk add --no-cache git curl
 RUN go install github.com/air-verse/air@latest
 
 WORKDIR /app
