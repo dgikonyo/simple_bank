@@ -1,5 +1,15 @@
 CREATE TYPE "Currency" AS ENUM('USD', 'EUR');
 
+CREATE TABLE "users"( 
+	"id" BIGSERIAL PRIMARY KEY NOT NULL, 
+	"username" varchar NOT NULL,
+	"hashed_password" varchar NOT NULL,
+	"full_name" varchar NOT NULL,
+	"email" varchar NOT NULL,
+	"password_changed_at" timestamptz DEFAULT (now()),
+	"created_at" timestamptz NOT NULL DEFAULT (now()),
+	"updated_at" timestamptz DEFAULT (now())
+  );
 CREATE TABLE "accounts" (
 	"id" BIGSERIAL PRIMARY KEY NOT NULL,
 	"owner" varchar NOT NULL,
