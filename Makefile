@@ -1,6 +1,7 @@
 # --- Variables ---
 DB_URL=postgresql://root_user:root_secret@localhost:5432/bank_db?sslmode=disable
-MIGRATE_PATH=./sql/schema
+SQL_PATH=./sql/schema
+MIGRATE_PATH=./internal/db/migration
 BINARY_NAME=main
 
 # --- Commands ---
@@ -31,7 +32,13 @@ clean:
 migrate-up:
 	migrate -path $(MIGRATE_PATH) -database "$(DB_URL)" -verbose up
 
+migrate-up1:
+	migrate -path $(MIGRATE_PATH) -database "$(DB_URL)" -verbose up 1
+
 migrate-down:
+	migrate -path $(MIGRATE_PATH) -database "$(DB_URL)" -verbose down
+
+migrate-down1:
 	migrate -path $(MIGRATE_PATH) -database "$(DB_URL)" -verbose down 1
 
 reset:
@@ -56,10 +63,4 @@ server:
 mock:
 	mockgen -destination internal/db/mock/store.go simple_bank/internal/db Store
 
-db-shell:
-	docker exec -it bank_db_dev psql -U root_user -d bank_db
-
-api-shell:
-	docker exec -it bank_api_dev /bin/sh
-
-.PHONY: init gen dev stop clean test test-db-up test-db-down clean reset server migrate-up migrate-down mock db-shell api-shell
+.PHONY: init gen dev stop clean test test-db-up test-db-down clean reset server migrate-up migrate-down mock migrate-down1 migrate-up1
